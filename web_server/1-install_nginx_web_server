@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Installs Nginx web server and configures it with a basic HTML page
+
+apt-get update
+apt-get install -y nginx
+echo "Holberton School" > /var/www/html/index.html
+sed -i 's/listen 80 default_server;/listen 80 default_server;/g' /etc/nginx/sites-available/default
+service nginx restart
+ufw allow 'Nginx HTTP'
+exit 0
