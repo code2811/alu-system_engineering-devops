@@ -15,12 +15,13 @@ echo "Holberton School for the win!" > /var/www/html/index.html
 # Restart Nginx (again using service, not systemctl)
 service nginx restart
 
-# Ensure Nginx is listening on port 80 and responding correctly
-# Check if the server responds with HTTP status 200 (OK) when queried
-curl -sI localhost | grep "HTTP/1.1 200 OK" > /dev/null
-if [ $? -eq 0 ]; then
-    echo "Nginx is running and returning 200 OK"
+# Check if the server responds with HTTP status 200 and the expected content
+response=$(curl -sI localhost)
+
+# Check if the response contains "HTTP/1.1 200 OK" and "Holberton School"
+if echo "$response" | grep -q "HTTP/1.1 200 OK" && curl -s localhost | grep -q "Holberton School for the win!"; then
+    echo "Nginx is running and returning 200 OK with the correct content."
 else
-    echo "Nginx is not configured properly"
+    echo "Nginx is not configured properly."
 fi
 
