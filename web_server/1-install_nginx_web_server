@@ -5,7 +5,7 @@
 apt-get update -y
 apt-get install nginx -y
 
-# Ensure Nginx is listening on port 80
+# Ensure Nginx is listening on port 80 (by default, it listens on 80)
 # Start Nginx service without using systemctl
 service nginx start
 
@@ -15,13 +15,26 @@ echo "Holberton School for the win!" > /var/www/html/index.html
 # Restart Nginx (again using service, not systemctl)
 service nginx restart
 
-# Check if the server responds with HTTP status 200 and the expected content
-response=$(curl -sI localhost)
+# Check if the server responds with HTTP status 200 when queried at root ("/")
+http_status=$(curl -s -o /dev/null -w "%{http_code}" localhost)
 
-# Check if the response contains "HTTP/1.1 200 OK" and "Holberton School"
-if echo "$response" | grep -q "HTTP/1.1 200 OK" && curl -s localhost | grep -q "Holberton School for the win!"; then
-    echo "Nginx is running and returning 200 OK with the correct content."
+if [ "$http_status" -eq 200 ]; then
+    echo "Your server web01 returns 200 when querying /"
 else
-    echo "Nginx is not configured properly."
+    echo "ERROR: Your server did not return HTTP 200 when querying /"
+fi
+
+# Check if Nginx is accepting traffic on port 80
+if ss -tuln | grep ':80 ' > /dev/null; then
+    echo "Nginx is installed on your web01 server and accepting traffic on port 80"
+else
+    echo "ERROR: Nginx is not listening on port 80"
+fi
+
+# Check if the root page contains the string "Holberton School"
+if curl -s localhost | grep -q "Holberton School"; then
+    echo "Nginx returns at its root / a page that contains Holberton School"
+else
+    echo "ERROR: Nginx root page does not contain 'Holberton School'"
 fi
 
