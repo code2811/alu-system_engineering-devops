@@ -1,5 +1,5 @@
-#!/bin/bash
-# Install nginx web server
+#!/usr/bin/env bash
+# This script installs Nginx, configures it to listen on port 80, and serves a page with "Holberton School"
 
 # Update package list and install Nginx
 apt-get update -y
@@ -14,4 +14,13 @@ echo "Holberton School for the win!" > /var/www/html/index.html
 
 # Restart Nginx (again using service, not systemctl)
 service nginx restart
+
+# Ensure Nginx is listening on port 80 and responding correctly
+# Check if the server responds with HTTP status 200 (OK) when queried
+curl -sI localhost | grep "HTTP/1.1 200 OK" > /dev/null
+if [ $? -eq 0 ]; then
+    echo "Nginx is running and returning 200 OK"
+else
+    echo "Nginx is not configured properly"
+fi
 
