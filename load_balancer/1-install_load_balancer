@@ -1,25 +1,28 @@
 #!/usr/bin/env bash
-# Installs and configures HAProxy to load balance between web-01 and web-02
+# Install and configure HAProxy on lb-01 server
+# Configure HAProxy to send traffic to web-01 and web-02 using round-robin algorithm
 
-# Update package lists
+# Update packages
 apt-get -y update
-
-# Install HAProxy
 apt-get -y install haproxy
 
 # Enable HAProxy to be started by init script
-sed -i 's/ENABLED=0/ENABLED=1/' /etc/default/haproxy
+echo "ENABLED=1" >> /etc/default/haproxy
 
-# Create a backup of the original config
-cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.original
+# Backup the original config file
+cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup
 
 # Configure HAProxy
 cat > /etc/haproxy/haproxy.cfg << EOF
 global
-    log 127.0.0.1 local0 notice
-    maxconn 2000
+    log /dev/log    local0
+    log /dev/log    local1 notice
+    chroot /var/lib/haproxy
+    stats socket /run/haproxy/admin.sock mode 660 level admin
+    stats timeout 30s
     user haproxy
     group haproxy
+    daemon
 
 defaults
     log     global
@@ -37,17 +40,15 @@ defaults
     errorfile 503 /etc/haproxy/errors/503.http
     errorfile 504 /etc/haproxy/errors/504.http
 
-frontend main
+frontend http_front
     bind *:80
-    default_backend web_servers
+    default_backend http_back
 
-backend web_servers
+backend http_back
     balance roundrobin
-    server web-01 web-01:80 check
-    server web-02 web-02:80 check
+    server web-01 STUDENT_ID-web-01:80 check
+    server web-02 STUDENT_ID-web-02:80 check
 EOF
 
-# Restart HAProxy
+# Start HAProxy service
 service haproxy restart
-
-exit 0
