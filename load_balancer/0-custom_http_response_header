@@ -6,36 +6,27 @@
 apt-get -y update
 apt-get -y install nginx
 
-# Enable and start nginx service
-systemctl enable nginx
-systemctl start nginx
-
-# Allow Nginx through the firewall
+# Allow Nginx HTTP traffic
 ufw allow 'Nginx HTTP'
 
-# Create necessary directories if they don't exist
+# Create necessary directories and files
 mkdir -p /var/www/html
-
-# Create a simple index.html file
 echo "Hello World!" > /var/www/html/index.html
+echo "Ceci n'est pas une page" > /var/www/html/404.html
 
 # Get the hostname of the server
 HOSTNAME=$(hostname)
 
-# Configure Nginx with custom header
-CONFIG_FILE="/etc/nginx/sites-available/default"
+# Create a new Nginx configuration file with custom header
+cat > /etc/nginx/conf.d/custom_header.conf << EOF
+server_tokens off;
+add_header X-Served-By $HOSTNAME;
+EOF
 
-# Make a backup of the original configuration
-cp $CONFIG_FILE ${CONFIG_FILE}.backup
-
-# Add the custom header to the Nginx configuration
-# We're adding it after the server_name directive
-sed -i "/server_name _;/a \\\tadd_header X-Served-By $HOSTNAME;" $CONFIG_FILE
-
-# Test Nginx configuration
+# Ensure Nginx configuration is valid
 nginx -t
 
 # Restart Nginx to apply changes
-systemctl restart nginx
+service nginx restart
 
 exit 0
