@@ -5,7 +5,7 @@
 apt-get -y update
 apt-get -y install software-properties-common
 
-# Add HAProxy repository and install HAProxy 2.0
+# Add HAProxy repository and install HAProxy
 add-apt-repository -y ppa:vbernat/haproxy-2.0
 apt-get -y update
 apt-get -y install haproxy
@@ -16,7 +16,7 @@ echo "ENABLED=1" > /etc/default/haproxy
 # Create a backup of the original config
 cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.backup
 
-# Configure HAProxy
+# Configure HAProxy with correct server names
 cat > /etc/haproxy/haproxy.cfg << EOF
 global
     log 127.0.0.1 local0 notice
@@ -41,17 +41,11 @@ frontend http_front
 
 backend http_back
     balance roundrobin
-    server web-01 [STUDENT_ID]-web-01:80 check
-    server web-02 [STUDENT_ID]-web-02:80 check
+    server web-01 web-01:80 check
+    server web-02 web-02:80 check
 EOF
 
-# Replace [STUDENT_ID] with your actual student ID
-# You need to replace the student ID with your actual ID
-# or use the actual IP addresses of your web servers
-sed -i "s/\[STUDENT_ID\]-web-01/$(dig +short [STUDENT_ID]-web-01)/" /etc/haproxy/haproxy.cfg
-sed -i "s/\[STUDENT_ID\]-web-02/$(dig +short [STUDENT_ID]-web-02)/" /etc/haproxy/haproxy.cfg
-
-# Start HAProxy service
+# Restart HAProxy service
 service haproxy restart
 
 exit 0
