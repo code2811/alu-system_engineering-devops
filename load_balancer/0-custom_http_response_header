@@ -1,32 +1,27 @@
 #!/usr/bin/env bash
-# Script to configure Nginx with custom HTTP header X-Served-By
-# The value of X-Served-By is the hostname of the server
+# This script configures a new Ubuntu machine to add a custom Nginx response header
 
-# Update packages and install nginx if not already installed
-apt-get -y update
-apt-get -y install nginx
+# Update and install Nginx
+sudo apt-get update
+sudo apt-get install -y nginx
 
-# Allow Nginx HTTP traffic
-ufw allow 'Nginx HTTP'
+# Configure Nginx to add the custom header
+SERVER_NAME=$(hostname)
+CONFIG_FILE="/etc/nginx/sites-available/default"
 
-# Create necessary directories and files
-mkdir -p /var/www/html
-echo "Hello World!" > /var/www/html/index.html
-echo "Ceci n'est pas une page" > /var/www/html/404.html
+# Backup the original configuration file
+sudo cp $CONFIG_FILE $CONFIG_FILE.bak
 
-# Get the hostname of the server
-HOSTNAME=$(hostname)
+# Add the custom header to the Nginx configuration
+sudo sed -i "/server_name _;/a \        add_header X-Served-By $SERVER_NAME;" $CONFIG_FILE
 
-# Create a new Nginx configuration file with custom header
-cat > /etc/nginx/conf.d/custom_header.conf << EOF
-server_tokens off;
-add_header X-Served-By $HOSTNAME;
-EOF
+# Test the Nginx configuration
+sudo nginx -t
 
-# Ensure Nginx configuration is valid
-nginx -t
-
-# Restart Nginx to apply changes
-service nginx restart
-
-exit 0
+# If the configuration test is successful, restart Nginx
+if [ $? -eq 0 ]; then
+    sudo systemctl restart nginx
+    echo "Nginx has been configured successfully with the custom header X-Served-By: $SERVER_NAME"
+else
+    echo "Nginx configuration test failed. Please check the configuration file."
+fi
