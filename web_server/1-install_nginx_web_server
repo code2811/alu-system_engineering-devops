@@ -1,40 +1,20 @@
-#!/usr/bin/env bash
-# This script installs Nginx, configures it to listen on port 80, and serves a page with "Holberton School"
+#!/bin/bash
 
-# Update package list and install Nginx
+# Update package lists
 apt-get update -y
+
+# Install nginx
 apt-get install nginx -y
 
-# Ensure Nginx is listening on port 80 (by default, it listens on 80)
-# Start Nginx service without using systemctl
-service nginx start
+# Configure nginx to listen on port 80
+# This is usually the default, but let's make sure
+sed -i 's/listen 80 default_server;/listen 80 default_server;/' /etc/nginx/sites-available/default
 
-# Modify the default page to include "Holberton School"
-echo "Holberton School for the win!" > /var/www/html/index.html
+# Create a custom index.html file with the required string
+echo "Holberton School" > /var/www/html/index.html
 
-# Restart Nginx (again using service, not systemctl)
+# Restart nginx without using systemctl
 service nginx restart
 
-# Check if the server responds with HTTP status 200 when queried at root ("/")
-http_status=$(curl -s -o /dev/null -w "%{http_code}" localhost)
-
-if [ "$http_status" -eq 200 ]; then
-    echo "Your server web01 returns 200 when querying /"
-else
-    echo "ERROR: Your server did not return HTTP 200 when querying /"
-fi
-
-# Check if Nginx is accepting traffic on port 80
-if ss -tuln | grep ':80 ' > /dev/null; then
-    echo "Nginx is installed on your web01 server and accepting traffic on port 80"
-else
-    echo "ERROR: Nginx is not listening on port 80"
-fi
-
-# Check if the root page contains the string "Holberton School"
-if curl -s localhost | grep -q "Holberton School"; then
-    echo "Nginx returns at its root / a page that contains Holberton School"
-else
-    echo "ERROR: Nginx root page does not contain 'Holberton School'"
-fi
-
+# Make sure nginx starts on boot
+update-rc.d nginx defaults
