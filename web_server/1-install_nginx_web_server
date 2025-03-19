@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #!/usr/bin/env bash
 # Script to install and configure Nginx web server
 
@@ -13,4 +14,25 @@ echo "Holberton School for the win!" > /var/www/html/index.html
 service nginx restart
 
 # Ensure Nginx starts on boot
+=======
+#!/bin/bash
+
+# Update package lists
+apt-get update -y
+
+# Install nginx
+apt-get install nginx -y
+
+# Configure nginx to listen on port 80
+# This is usually the default, but let's make sure
+sed -i 's/listen 80 default_server;/listen 80 default_server;/' /etc/nginx/sites-available/default
+
+# Create a custom index.html file with the required string
+echo "Holberton School" > /var/www/html/index.html
+
+# Restart nginx without using systemctl
+service nginx restart
+
+# Make sure nginx starts on boot
+>>>>>>> 38cb7b6f803b82c1fce637f32a25746a17ab411e
 update-rc.d nginx defaults
