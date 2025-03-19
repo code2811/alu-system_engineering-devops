@@ -1,9 +1,8 @@
-<<<<<<< HEAD
 #!/usr/bin/env bash
 # Script to install and configure Nginx web server
 
 # Update package lists and install nginx with -y flag
-apt-get update
+apt-get update -y
 apt-get install -y nginx
 
 # Create a custom index.html file with the required content
@@ -33,6 +32,6 @@ echo "Holberton School" > /var/www/html/index.html
 # Restart nginx without using systemctl
 service nginx restart
 
-# Make sure nginx starts on boot
->>>>>>> 38cb7b6f803b82c1fce637f32a25746a17ab411e
-update-rc.d nginx defaults
+
+
+
