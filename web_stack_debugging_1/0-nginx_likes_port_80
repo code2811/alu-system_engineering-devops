@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
-# Fixes Nginx to listen on port 80
+# Fixes Nginx to listen on port 80 and return HTTP 200
 
-# Find the issue - typically Nginx is configured to listen on another port
+# Fix the Nginx configuration to listen on port 80
 sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
 sed -i 's/listen \[::\]:8080/listen \[::\]:80/g' /etc/nginx/sites-available/default
 
-# Make sure Nginx is running
+# Make sure the default site is enabled
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+
+# Check for any syntax errors in the configuration
+nginx -t
+
+# Create a simple index.html file if it doesn't exist
+if [ ! -f /var/www/html/index.html ]; then
+    echo "Hello World!" > /var/www/html/index.html
+fi
+
+# Make sure Nginx is running and restart it
 service nginx restart
