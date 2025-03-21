@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Check if Nginx is installed
+if ! command -v nginx &> /dev/null; then
+    echo "Nginx is not installed. Installing Nginx..."
+    apt update && apt install -y nginx
+fi
+
+# Ensure Nginx is enabled and started
+echo "Ensuring Nginx is running..."
+systemctl enable nginx
+systemctl start nginx
+
+# Modify Nginx config to listen on all interfaces (IPv4)
+echo "Configuring Nginx to listen on port 80 for all IPs..."
+sed -i 's/listen 80 default_server;/listen 0.0.0.0:80 default_server;/' /etc/nginx/sites-available/default
+
+# Ensure firewall allows traffic on port 80
+echo "Allowing port 80 through the firewall..."
+ufw allow 80/tcp
+
+# Restart Nginx to apply changes
+echo "Restarting Nginx to apply changes..."
+systemctl restart nginx
+
+# Check if Nginx is listening on port 80
+echo "Verifying if Nginx is listening on port 80..."
+ss -tuln | grep ':80'
+
+echo "Nginx is now configured to listen on port 80."
+
