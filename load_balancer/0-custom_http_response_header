@@ -1,34 +1,25 @@
 #!/usr/bin/env bash
-# Configures Nginx with a custom HTTP header
-# The header will be named X-Served-By with the value as the hostname
+# Configure Nginx with a custom HTTP header
 
-# Update packages
+# Update and install Nginx
 apt-get -y update
 apt-get -y install nginx
 
-# Create directories if they don't exist
-mkdir -p /var/www/html
-
-# Create basic HTML pages
+# Create a basic index.html file
 echo "Hello World!" > /var/www/html/index.html
-echo "Ceci n'est pas une page" > /var/www/html/404.html
 
-# Configure nginx with custom header
-# Get the hostname of the server
-HOSTNAME=$(hostname)
+# Configure Nginx with custom header
+hostname=$(hostname)
+config_file="/etc/nginx/sites-available/default"
 
-# Backup the original nginx configuration file
-CONFIG_FILE="/etc/nginx/sites-available/default"
-cp $CONFIG_FILE ${CONFIG_FILE}.backup
+# Check if the header is already in the config file
+if ! grep -q "X-Served-By" $config_file; then
+    # Add custom header with server hostname
+    sed -i "/server_name _;/a \\\tadd_header X-Served-By $hostname;" $config_file
+fi
 
-# Add custom header to the nginx configuration
-sed -i "/server_name _;/a \\\tadd_header X-Served-By $HOSTNAME;" $CONFIG_FILE
-
-# Configure error page
-sed -i "/listen 80 default_server;/a \\\terror_page 404 /404.html;" $CONFIG_FILE
-
-# Enable the new configuration
-ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
-# Restart nginx service
+# Ensure Nginx is running and enabled
 service nginx restart
+
+# Allow HTTP traffic through the firewall
+ufw allow 'Nginx HTTP'
