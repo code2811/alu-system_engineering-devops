@@ -1,20 +1,42 @@
 #!/usr/bin/env bash
 # Fixes Nginx to listen on port 80 and return HTTP 200
 
-# Fix the Nginx configuration to listen on port 80
-sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
-sed -i 's/listen \[::\]:8080/listen \[::\]:80/g' /etc/nginx/sites-available/default
+# Stop nginx if it's running
+service nginx stop
 
-# Make sure the default site is enabled
-ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+# Remove any default files that might be causing issues
+rm -f /etc/nginx/sites-enabled/default
+rm -f /etc/nginx/sites-enabled/*
 
-# Check for any syntax errors in the configuration
+# Create a new default configuration that definitely works
+cat > /etc/nginx/sites-available/default << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    
+    server_name _;
+    
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+
+# Create a symbolic link to enable the site
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+
+# Create a simple index.html file
+echo "Hello Nginx" > /var/www/html/index.html
+
+# Make sure the permissions are correct
+chown -R www-data:www-data /var/www/html
+chmod -R 755 /var/www/html
+
+# Check Nginx configuration
 nginx -t
 
-# Create a simple index.html file if it doesn't exist
-if [ ! -f /var/www/html/index.html ]; then
-    echo "Hello World!" > /var/www/html/index.html
-fi
-
-# Make sure Nginx is running and restart it
-service nginx restart
+# Start Nginx
+service nginx start
