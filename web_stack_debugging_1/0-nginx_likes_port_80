@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# This script installs and configures Nginx to listen on port 80 for all IPv4 interfaces, 
-# ensures the firewall allows traffic on port 80, and restarts Nginx to apply the changes.
+# This script installs and configures Nginx to listen on port 80 for all IPv4 interfaces,
+# allows traffic through the firewall on port 80, and restarts Nginx to ensure it's running.
+# After execution, Nginx should return a web page with HTTP 200 on port 80.
 
 # Check if Nginx is installed
 if ! command -v nginx &> /dev/null; then
