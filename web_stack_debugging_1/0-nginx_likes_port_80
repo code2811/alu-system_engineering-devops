@@ -1,28 +1,32 @@
 #!/bin/bash
 
-# Install Nginx if not already installed
-if ! command -v nginx &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y nginx
+# Step 1: Ensure Nginx is installed
+if ! command -v nginx &> /dev/null
+then
+    echo "Nginx could not be found. Installing..."
+    apt update && apt install -y nginx
 fi
 
-# Ensure Nginx is running
-if ! sudo systemctl is-active --quiet nginx; then
-    sudo systemctl start nginx
+# Step 2: Ensure Nginx is configured to listen on port 80
+NGINX_CONF="/etc/nginx/sites-available/default"
+
+# Check if the config already listens on port 80
+if ! grep -q "listen 80;" $NGINX_CONF; then
+    echo "Configuring Nginx to listen on port 80..."
+    # Ensure the config file has the correct listen directive
+    sed -i 's/listen 127.0.0.1:80;/listen 80;/' $NGINX_CONF
+    sed -i 's/listen \[::\]:80;/listen 80;/' $NGINX_CONF
 fi
 
-# Check if Nginx is listening on port 80
-if ! sudo netstat -tuln | grep -q ':80 '; then
-    # Stop any conflicting service on port 80
-    sudo lsof -i :80 | awk 'NR!=1 {print $2}' | xargs -r sudo kill -9
+# Step 3: Start or restart Nginx
+echo "Starting or restarting Nginx..."
+systemctl restart nginx
 
-    # Restart Nginx to ensure it listens on port 80
-    sudo systemctl restart nginx
-fi
-
-# Verify Nginx is listening on port 80
-if sudo netstat -tuln | grep -q ':80 '; then
+# Step 4: Verify Nginx is listening on port 80
+if netstat -tuln | grep ":80"; then
     echo "Nginx is now listening on port 80."
 else
-    echo "Failed to configure Nginx to listen on port 80."
+    echo "Nginx failed to start or listen on port 80."
+    exit 1
 fi
+
