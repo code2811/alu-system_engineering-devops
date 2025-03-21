@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Fixes Nginx to listen on port 80
+
+# Find the issue - typically Nginx is configured to listen on another port
+sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
+sed -i 's/listen \[::\]:8080/listen \[::\]:80/g' /etc/nginx/sites-available/default
+
+# Make sure Nginx is running
+service nginx restart
