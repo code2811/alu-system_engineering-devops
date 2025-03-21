@@ -1,39 +1,36 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# This script installs and configures Nginx to listen on port 80 for all IPv4 interfaces, 
-# ensures the firewall allows traffic on port 80, and restarts Nginx to return an HTTP 200 
-# response on port 80 after execution.
+# This script ensures Nginx is installed, configured to listen on port 80,
+# and returns a web page with an HTTP 200 status code.
 
-# Check if Nginx is installed
-if ! command -v nginx &> /dev/null; then
-    echo "Nginx is not installed. Installing Nginx..."
-    apt update && apt install -y nginx
-fi
+# Ensure Nginx is installed
+apt-get update
+apt-get install -y nginx
 
-# Ensure Nginx is enabled and started
-echo "Ensuring Nginx is running..."
-systemctl enable nginx
+# Ensure Nginx is running
 systemctl start nginx
 
-# Modify Nginx config to listen on all interfaces (IPv4)
-echo "Configuring Nginx to listen on port 80 for all IPs..."
-sed -i 's/listen 80 default_server;/listen 0.0.0.0:80 default_server;/' /etc/nginx/sites-available/default
-
-# Ensure firewall allows traffic on port 80
-echo "Allowing port 80 through the firewall..."
-ufw allow 80/tcp
-
-# Restart Nginx to apply changes
-echo "Restarting Nginx to apply changes..."
-systemctl restart nginx
-
 # Check if Nginx is listening on port 80
-echo "Verifying if Nginx is listening on port 80..."
-ss -tuln | grep ':80'
+if ! netstat -tuln | grep -q ':80 '; then
+    # Update Nginx configuration to listen on port 80
+    sed -i 's/listen \[::\]:80 default_server;/listen 80;/g' /etc/nginx/sites-available/default
+    # Restart Nginx to apply changes
+    systemctl restart nginx
+fi
 
-# Check if the Nginx server responds with HTTP 200
-echo "Checking if Nginx returns a web page with HTTP 200 on port 80..."
-curl -I 0:80 | grep "HTTP/1.1 200 OK"
+# Verify Nginx is listening on port 80
+if netstat -tuln | grep -q ':80 '; then
+    echo "Nginx is now listening on port 80."
+else
+    echo "Failed to configure Nginx to listen on port 80."
+    exit 1
+fi
 
-echo "Nginx is now configured to listen on port 80 and should return HTTP 200."
-
+# Verify Nginx returns a web page with HTTP 200
+response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80)
+if [ "$response" -eq 200 ]; then
+    echo "Nginx is serving a web page with HTTP 200."
+else
+    echo "Nginx is not serving a web page with HTTP 200."
+    exit 1
+fi
