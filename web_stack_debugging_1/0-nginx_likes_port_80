@@ -1,36 +1,9 @@
 #!/usr/bin/env bash
-# This script ensures Nginx is installed, configured to listen on port 80, and serves a web page with HTTP 200.
+# Fixes Nginx to listen on port 80
 
-# Install Nginx if not already installed
-if ! command -v nginx &> /dev/null; then
-    apt-get update
-    apt-get install -y nginx
-fi
+# Check if Nginx config is using the correct port
+sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
+sed -i 's/listen \[::\]:8080/listen \[::\]:80/g' /etc/nginx/sites-available/default
 
-# Ensure Nginx is running
-systemctl start nginx
-
-# Check if Nginx is listening on port 80
-if ! netstat -tuln | grep -q ':80 '; then
-    # Update Nginx configuration to listen on port 80
-    sed -i 's/listen \[::\]:80 default_server;/listen 80;/g' /etc/nginx/sites-available/default
-    # Restart Nginx to apply changes
-    systemctl restart nginx
-fi
-
-# Verify Nginx is listening on port 80
-if netstat -tuln | grep -q ':80 '; then
-    echo "Nginx is now listening on port 80."
-else
-    echo "Failed to configure Nginx to listen on port 80."
-    exit 1
-fi
-
-# Verify Nginx returns a web page with HTTP 200
-response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:80)
-if [ "$response" -eq 200 ]; then
-    echo "Nginx is serving a web page with HTTP 200."
-else
-    echo "Nginx is not serving a web page with HTTP 200."
-    exit 1
-fifi
+# Make sure Nginx is running
+service nginx restart
