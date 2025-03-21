@@ -1,12 +1,28 @@
-#!/usr/bin/env bash
-# Script to fix Nginx to listen on port 80
+#!/bin/bash
 
-# Find out what port Nginx is configured to listen on
-sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
-sed -i 's/listen \[::\]:8080/listen [::]:80/g' /etc/nginx/sites-available/default
+# Install Nginx if not already installed
+if ! command -v nginx &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install -y nginx
+fi
 
-# Restart Nginx to apply changes
-service nginx restart
+# Ensure Nginx is running
+if ! sudo systemctl is-active --quiet nginx; then
+    sudo systemctl start nginx
+fi
 
-# Exit with code 2 as required
-exit 2
+# Check if Nginx is listening on port 80
+if ! sudo netstat -tuln | grep -q ':80 '; then
+    # Stop any conflicting service on port 80
+    sudo lsof -i :80 | awk 'NR!=1 {print $2}' | xargs -r sudo kill -9
+
+    # Restart Nginx to ensure it listens on port 80
+    sudo systemctl restart nginx
+fi
+
+# Verify Nginx is listening on port 80
+if sudo netstat -tuln | grep -q ':80 '; then
+    echo "Nginx is now listening on port 80."
+else
+    echo "Failed to configure Nginx to listen on port 80."
+fi
