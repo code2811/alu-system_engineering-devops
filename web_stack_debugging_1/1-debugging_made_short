@@ -1,0 +1,6 @@
+#!/bin/bash
+apt-get update -qq
+apt-get install -y -qq nginx
+lsof -ti :80 | xargs -r kill -9
+nginx -t && service nginx start
+curl -s 0:80 > /dev/null
