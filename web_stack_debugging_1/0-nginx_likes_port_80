@@ -1,16 +1,31 @@
 #!/usr/bin/env bash
-<<<<<<< HEAD
-# Short fix for Nginx port
-sed -i 's/listen .*:/listen 80/g' /etc/nginx/sites-enabled/default
-pkill nginx
-nginx
-=======
-# Fixes Nginx to listen on port 80
+# Displays information about subdomains
 
-# Check if Nginx config is using the correct port
-sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
-sed -i 's/listen \[::\]:8080/listen \[::\]:80/g' /etc/nginx/sites-available/default
+# Function to get DNS information for a subdomain
+get_subdomain_info() {
+    local domain=$1
+    local subdomain=$2
+    
+    # Get DNS information using dig command
+    # Extract the record type and destination IP
+    # Format using awk to display the required output
+    dig_output=$(dig +short $subdomain.$domain | head -n 1)
+    record_type=$(dig $subdomain.$domain | grep -A1 'ANSWER SECTION:' | tail -1 | awk '{print $4}')
+    
+    # Display the information
+    echo "The subdomain $subdomain is a $record_type record and points to $dig_output"
+}
 
-# Make sure Nginx is running
-service nginx restart
->>>>>>> 341cf25792b8e7550527906abbb7ec4c92c82a7b
+# Main script logic
+domain=$1
+subdomain=$2
+
+if [ -z "$subdomain" ]; then
+    # If no subdomain is specified, display information for default subdomains
+    for sub in "www" "lb-01" "web-01" "web-02"; do
+        get_subdomain_info "$domain" "$sub"
+    done
+else
+    # If a specific subdomain is specified, display information for that subdomain only
+    get_subdomain_info "$domain" "$subdomain"
+fi
