@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
-# Fix Nginx to listen on port 80 and ensure it serves a web page
-apt-get update -qq
-apt-get install -y -qq nginx
-lsof -ti :80 | xargs -r kill -9
-nginx -t
-service nginx start
+# Fix Nginx port 80 issue
+sed -i 's/8080/80/g' /etc/nginx/sites-enabled/default
+pkill nginx
+ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
+nginx
