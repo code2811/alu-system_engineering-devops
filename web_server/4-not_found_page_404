@@ -1,15 +1,49 @@
 #!/usr/bin/env bash
-# Script to configure Nginx with a custom 404 page
+# Configure Nginx server with a custom 404 page containing "Ceci n'est pas une page"
 
-# Install nginx if not already installed
-apt-get -y update
-apt-get -y install nginx
+# Update package lists and install Nginx
+sudo apt-get update -y
+sudo apt-get install -y nginx
 
-# Create a custom 404 page with the required content
-echo "Ceci n'est pas une page" > /var/www/html/404.html
+# Create the document root directory if it doesn't exist
+sudo mkdir -p /var/www/html
 
-# Configure Nginx to use the custom 404 page
-sed -i '/server_name _;/a \\n\terror_page 404 /404.html;\n\tlocation = /404.html {\n\t\troot /var/www/html;\n\t\tinternal;\n\t}' /etc/nginx/sites-available/default
+# Create the main index page
+echo "Holberton School" | sudo tee /var/www/html/index.html > /dev/null
 
-# Restart Nginx to apply changes
-service nginx restart
+# Create a custom 404 page
+echo "Ceci n'est pas une page" | sudo tee /var/www/html/404.html > /dev/null
+
+# Configure Nginx with redirect and custom 404 page
+sudo bash -c 'cat > /etc/nginx/sites-available/default << EOF
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    
+    root /var/www/html;
+    index index.html index.htm;
+    
+    server_name _;
+    
+    # Custom 404 page
+    error_page 404 /404.html;
+    
+    # Redirect configuration
+    location /redirect_me {
+        return 301 http://youtube.com/;
+    }
+    
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+}
+EOF'
+
+# Ensure Nginx is enabled to start on boot
+sudo systemctl enable nginx
+
+# Restart Nginx service
+sudo service nginx restart
+
+# Wait for Nginx to start
+sleep 2
