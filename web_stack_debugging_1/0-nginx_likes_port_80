@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # Short script to fix Nginx port
-sed -i 's/8080/80/g' /etc/nginx/sites-available/default
-ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-nginx -t
+sed -i 's/8080/80/g' /etc/nginx/sites-enabled/default
 pkill nginx
 nginx
