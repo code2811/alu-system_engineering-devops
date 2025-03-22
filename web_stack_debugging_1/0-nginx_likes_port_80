@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
+<<<<<<< HEAD
 # Short fix for Nginx port
 sed -i 's/listen .*:/listen 80/g' /etc/nginx/sites-enabled/default
 pkill nginx
 nginx
+=======
+# Fixes Nginx to listen on port 80
+
+# Check if Nginx config is using the correct port
+sed -i 's/listen 8080/listen 80/g' /etc/nginx/sites-available/default
+sed -i 's/listen \[::\]:8080/listen \[::\]:80/g' /etc/nginx/sites-available/default
+
+# Make sure Nginx is running
+service nginx restart
+>>>>>>> 341cf25792b8e7550527906abbb7ec4c92c82a7b

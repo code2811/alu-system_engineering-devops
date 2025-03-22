@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+<<<<<<< HEAD
 # bash script that configures a Nginx server to redirect '/redirect_me' to 'http://youtube.com/'
 # redirection is configured as a "301 Moved Permanently"
 
@@ -21,4 +22,35 @@ printf %s "server {
     }
 }" > /etc/nginx/sites-available/default
 
+=======
+# Script to install and configure Nginx with a 301 redirect
+
+# Install nginx if not already installed
+apt-get -y update
+apt-get -y install nginx
+
+# Create default index.html with "Hello World!" content
+echo "Hello World!" > /var/www/html/index.html
+
+# Create a new Nginx configuration file for the redirect
+cat > /etc/nginx/sites-available/default << 'EOF'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    server_name _;
+
+    location /redirect_me {
+        return 301 https://www.youtube.com/watch?v=QH2-TGUlwu4;
+    }
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+EOF
+
+# Restart Nginx to apply changes
+>>>>>>> 341cf25792b8e7550527906abbb7ec4c92c82a7b
 service nginx restart
