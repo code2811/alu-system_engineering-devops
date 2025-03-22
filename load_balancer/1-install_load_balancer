@@ -1,20 +1,21 @@
 #!/usr/bin/env bash
-# Install and configure HAProxy load balancer
+# Install and configure HAProxy on lb-01 server
+# Configure it to use round-robin algorithm to distribute requests
 
-# Update package list
-apt-get -y update
+# Update package lists
+sudo apt-get -y update
 
 # Install HAProxy
-apt-get -y install haproxy
+sudo apt-get -y install haproxy
 
 # Enable HAProxy to be started by init script
-echo "ENABLED=1" >> /etc/default/haproxy
+echo "ENABLED=1" | sudo tee -a /etc/default/haproxy > /dev/null
 
 # Create a backup of the original config file
-cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.orig
+sudo cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.original
 
-# Create new HAProxy configuration
-cat > /etc/haproxy/haproxy.cfg << EOF
+# Configure HAProxy
+sudo bash -c 'cat > /etc/haproxy/haproxy.cfg << EOF
 global
     log 127.0.0.1 local0 notice
     maxconn 2000
@@ -34,22 +35,14 @@ defaults
 
 frontend http_front
     bind *:80
-    stats uri /haproxy?stats
     default_backend http_back
 
 backend http_back
     balance roundrobin
-    server web-01 [STUDENT_ID]-web-01:80 check
-    server web-02 [STUDENT_ID]-web-02:80 check
-EOF
+    server web-01 3.83.104.216:80 check
+    server web-02 98.81.224.4:80 check
+EOF'
 
-# Update the configuration with the actual student ID
-# You'll need to replace [STUDENT_ID] with your actual student ID
-# or use the hostname without [STUDENT_ID] if you know the full hostname/IP
-
-# Replace [STUDENT_ID] with your actual student ID
-# Example: sed -i 's/\[STUDENT_ID\]/03/g' /etc/haproxy/haproxy.cfg
-# If you have the full IPs, replace the web-01/web-02 lines with those directly
 
 # Restart HAProxy service
-service haproxy restart
+sudo service haproxy restart
