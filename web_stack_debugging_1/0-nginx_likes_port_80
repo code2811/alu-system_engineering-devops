@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Short script to fix Nginx port
-sed -i 's/8080/80/g' /etc/nginx/sites-enabled/default
+# Short fix for Nginx port
+sed -i 's/listen .*:/listen 80/g' /etc/nginx/sites-enabled/default
 pkill nginx
 nginx
