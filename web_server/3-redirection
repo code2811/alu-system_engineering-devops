@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-<<<<<<< HEAD
+#!/usr/bin/env bas
 # bash script that configures a Nginx server to redirect '/redirect_me' to 'http://youtube.com/'
 # redirection is configured as a "301 Moved Permanently"
 
@@ -52,5 +51,5 @@ server {
 EOF
 
 # Restart Nginx to apply changes
->>>>>>> 341cf25792b8e7550527906abbb7ec4c92c82a7b
+
 service nginx restart
