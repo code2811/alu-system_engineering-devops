@@ -42,4 +42,4 @@ EOF'
 sudo rm -f /etc/nginx/sites-enabled/default
 
 # Start Nginx service
-sudo service nginx restart
+sudo service nginx restart6
