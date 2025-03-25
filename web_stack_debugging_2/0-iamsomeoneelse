@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# Run whoami command as the user specified in the first argument
-if id "$1" &>/dev/null; then
-    sudo -u "$1" whoami
-else
-    echo "User $1 does not exist"
+# Script to run whoami as the specified user
+
+# Check if a username is provided
+if [ $# -eq 0 ]; then
+    echo "Please provide a username"
     exit 1
 fi
+
+# Run whoami as the specified user
+sudo -u "$1" whoami
