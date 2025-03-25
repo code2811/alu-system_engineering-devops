@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# Script to configure Nginx to run as nginx user on port 8080
+
+# Modify nginx configuration to change user and port
+sed -i 's/user\s*root;/user nginx;/' /etc/nginx/nginx.conf
+sed -i 's/listen\s*80;/listen 8080;/' /etc/nginx/sites-available/default
+
+# Change ownership of nginx files to nginx user
+chown -R nginx:nginx /etc/nginx
+chown -R nginx:nginx /var/log/nginx
+chown -R nginx:nginx /var/lib/nginx
+
+# Modify permissions of nginx files
+chmod -R 755 /etc/nginx
+chmod -R 755 /var/log/nginx
+chmod -R 755 /var/lib/nginx
+
+# Kill any existing nginx processes
+pkill -f nginx
+
+# Start nginx as nginx user
+sudo -u nginx nginx
