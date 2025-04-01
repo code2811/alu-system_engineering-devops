@@ -1,32 +1,19 @@
-file_line { 'increase-worker-processes':
-  ensure => present,
-  path   => '/etc/nginx/nginx.conf',
-  match  => '^\s*worker_processes\s+\d+;',
-  line   => 'worker_processes auto;',
-  notify => Service['nginx'],
+# 0-the_sky_is_the_limit_not.pp
+exec { 'increase_nginx_limits':
+  command => 'sed -i "s/worker_connections [0-9]\+;/worker_connections 5000;/" /etc/nginx/nginx.conf && \
+             sed -i "s/worker_processes [0-9]\+;/worker_processes auto;/" /etc/nginx/nginx.conf && \
+             echo "events { worker_connections 5000; }" >> /etc/nginx/nginx.conf && \
+             echo "ulimit -n 10000" >> /etc/default/nginx && \
+             service nginx restart',
+  path    => '/bin:/usr/bin:/usr/sbin',
+  unless  => 'grep -q "worker_connections 5000" /etc/nginx/nginx.conf',
 }
 
-file_line { 'increase-worker-connections':
-  ensure => present,
-  path   => '/etc/nginx/nginx.conf',
-  match  => '^\s*worker_connections\s+\d+;',
-  line   => 'worker_connections 2048;',
-  notify => Service['nginx'],
-}
-
-# Ensure Nginx service is running
-service { 'nginx':
-  ensure => running,
-  enable => true,
-}
-
-# Ensure Nginx configuration is correct
-exec { 'test-nginx-config':
-  command     => '/usr/sbin/nginx -t',
-  refreshonly => true,
-  subscribe   => [
-    File_line['increase-worker-processes'],
-    File_line['increase-worker-connections']
-  ],
-  notify      => Service['nginx'],
-}
+exec { 'increase_system_limits':
+  command => 'echo "* soft nofile 10000" >> /etc/security/limits.conf && \
+             echo "* hard nofile 10000" >> /etc/security/limits.conf && \
+             echo "root soft nofile 10000" >> /etc/security/limits.conf && \
+             echo "root hard nofile 10000" >> /etc/security/limits.conf',
+  path    => '/bin:/usr/bin:/usr/sbin',
+  unless  => 'grep -q "soft nofile 10000" /etc/security/limits.conf',
+}}
