@@ -1,23 +1,15 @@
-# Puppet manifest to fix WordPress 500 Internal Server Error
+# Puppet manifest to fix the Apache 500 error
 
-# Ensure Apache is running
-service { 'apache2':
-  ensure => running,
-  enable => true,
-}
+# The most common WordPress 500 errors are often due to:
+# 1. PHP misconfigurations (file permissions, paths, etc.)
+# 2. Typos in PHP file names causing "file not found" errors
+# 3. Incorrect file paths in WordPress configuration
 
-# Fix file permissions for WordPress directories
-file { ['/var/www/html', '/var/www/html/wp-admin', '/var/www/html/wp-content']:
-  ensure  => directory,
-  owner   => 'www-data',
-  group   => 'www-data',
-  recurse => true,
-  mode    => '0755',
-}
+# Based on strace output, the issue is likely a misspelled PHP file extension
+# in the WordPress configuration (e.g., '.phpp' instead of '.php')
 
-# Ensure PHP configuration is correct
 exec { 'fix-wordpress':
-  command => '/bin/chmod 755 /var/www/html/wp-*.php',
-  unless  => '/usr/bin/test "$(stat -c "%a %U" /var/www/html/wp-config.php)" = "755 www-data"',
-  require => Service['apache2'],
-}
+  command => 'sed -i s/phpp/php/g /var/www/html/wp-settings.php',
+  path    => '/usr/local/bin:/usr/bin:/bin',
+  onlyif  => 'grep -q phpp /var/www/html/wp-settings.php',
+}}
